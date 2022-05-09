@@ -20,7 +20,9 @@ class LED_Matrix
             int dataPin = DEFAULT_DATA_PIN);
 
         ~LED_Matrix();
+        void turnOff();
         int getNumLeds();
+        void setBrightness(int brightness);
         void lightOne(int row, int col, CRGB::HTMLColorCode color);
         void lightOneRow(int rowIndex, CRGB::HTMLColorCode color);
         void iterRows(CRGB::HTMLColorCode color);

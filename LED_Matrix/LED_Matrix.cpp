@@ -21,9 +21,21 @@ LED_Matrix::~LED_Matrix()
     delete [] this->leds;
 }
 
+void LED_Matrix::turnOff()
+{
+    fill_solid(this->leds, this->numLeds, CRGB::Black);
+    FastLED.show();
+}
+
 int LED_Matrix::getNumLeds()
 {
     return this->numLeds;
+}
+
+void LED_Matrix::setBrightness(int brightness)
+{
+    this->brightness = brightness;
+    FastLED.setBrightness(this->brightness);
 }
 
 void LED_Matrix::lightOne(int row, int col, CRGB::HTMLColorCode color)
