@@ -23,13 +23,27 @@ LED_Matrix::~LED_Matrix()
 
 void LED_Matrix::turnOff()
 {
-    fill_solid(this->leds, this->numLeds, CRGB::Black);
+    FastLED.clear();
+}
+
+void LED_Matrix::show()
+{
     FastLED.show();
 }
 
 int LED_Matrix::getNumLeds()
 {
     return this->numLeds;
+}
+
+int LED_Matrix::getNumRows()
+{
+    return this->numRows;
+}
+
+int LED_Matrix::getNumCols()
+{
+    return this->numCols;
 }
 
 void LED_Matrix::setBrightness(int brightness)
@@ -47,8 +61,6 @@ void LED_Matrix::lightOne(int row, int col, CRGB::HTMLColorCode color)
         this->leds[(this->numRows - row - 1) + col * this->numRows] = color;
     else
         this->leds[row + col * this->numRows] = color;
-    
-    FastLED.show();
 }
 
 void LED_Matrix::lightOneRow(int rowIndex, CRGB::HTMLColorCode color)
@@ -58,8 +70,6 @@ void LED_Matrix::lightOneRow(int rowIndex, CRGB::HTMLColorCode color)
         // matrix array is snake-like
         lightOne(rowIndex, i, color);
     }
-
-    FastLED.show();
 }
 
 void LED_Matrix::iterRows(CRGB::HTMLColorCode color)
@@ -72,15 +82,18 @@ void LED_Matrix::iterRows(CRGB::HTMLColorCode color)
     FastLED.show();
 }
 
-void LED_Matrix::lightOneColumn(int colIndex, CRGB::HTMLColorCode color)
+void LED_Matrix::lightOneColumn(int colIndex, CRGB::HTMLColorCode color, int numToFill, bool down)
 {
-    for (int i = 0; i < this->numRows; i++)
-    {
-        //this->leds[i + colIndex * this->numRows] = color;
-        lightOne(i, colIndex, color);
-    }
+    if (numToFill == -1)
+        numToFill = this->numRows;
+    else
+        numToFill++;
 
-    FastLED.show();
+    for (int i = 0; i < numToFill; i++)
+    {
+        int rowValue = (down ? i : this->numRows - i);
+        lightOne(rowValue, colIndex, color);
+    }
 }
 
 void LED_Matrix::iterColumns(CRGB::HTMLColorCode color)

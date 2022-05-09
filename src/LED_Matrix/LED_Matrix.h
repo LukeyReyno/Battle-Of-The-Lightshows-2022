@@ -21,12 +21,15 @@ class LED_Matrix
 
         ~LED_Matrix();
         void turnOff();
+        void show();
         int getNumLeds();
+        int getNumRows();
+        int getNumCols();
         void setBrightness(int brightness);
         void lightOne(int row, int col, CRGB::HTMLColorCode color);
         void lightOneRow(int rowIndex, CRGB::HTMLColorCode color);
         void iterRows(CRGB::HTMLColorCode color);
-        void lightOneColumn(int colIndex, CRGB::HTMLColorCode color);
+        void lightOneColumn(int colIndex, CRGB::HTMLColorCode color, int numToFill = -1, bool down = true);
         void iterColumns(CRGB::HTMLColorCode color);
         void fillGradientMatrix(CRGB::HTMLColorCode* colors, int size);
         void rainbow();

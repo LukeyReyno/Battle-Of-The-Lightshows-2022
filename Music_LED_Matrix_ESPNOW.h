@@ -1,13 +1,15 @@
-#include "LED_Matrix/LED_Matrix.h"
+#include "src/LED_Matrix/LED_Matrix.h"
 
 #define POT_PIN 2
 
-const int   MY_PACKET_VERSION   = 2;    //only processes verion 1 packets
+// set up matrix
+LED_Matrix musicMatrix;
+
+const int MY_PACKET_VERSION = 2;    //only processes verion 1 packets
 
 volatile boolean newData=false;
 
-// set up matrix
-LED_Matrix musicMatrix;
+int testIter = 0;
 
 // Must match the transmitter structure
 typedef struct struct_message

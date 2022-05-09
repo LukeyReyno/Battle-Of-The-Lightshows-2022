@@ -10,12 +10,6 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len)
     newData = true;
 }
 
-void milli_delay(int thisLong)
-{
-    int target = millis() + thisLong;
-    while (millis() < target) {;}
-}
-
 void setup()
 {
     Serial.begin(115200);
@@ -37,7 +31,7 @@ void setup()
     
     // Once ESPNow is successfully Init, we will register for recv CB to
     // get recv packer info
-    esp_now_register_recv_cb(OnDataRecv);   
+    esp_now_register_recv_cb(OnDataRecv);
 }
 
 void loop()
@@ -72,6 +66,7 @@ void loop()
 
             //RGB, No Peak Hold, Channel Select
             case 1:
+                synthesizer();
             case 2:
             case 3:
             case 4:
@@ -145,8 +140,36 @@ void loop()
                 break;
 
             default:
-                musicMatrix.turnOff();
+                //musicMatrix.turnOff();
+                musicMatrix.lightOneRow(3, CRGB::AliceBlue);
                 break;
         }
     }
+}
+
+void synthesizer(CRGB::HTMLColorCode color = CRGB::AliceBlue, CRGB::HTMLColorCode ceilingColor = CRGB::Red)
+{
+    for (int j = 0; j < musicMatrix.getNumCols(); j++)
+    {
+        if (j == musicMatrix.getNumCols() / 2 || j == (musicMatrix.getNumCols() / 2) + 1)
+        {
+            musicMatrix.lightOneColumn(j, CRGB::Green, myData.monoAverage, false);
+            if (myData.monoAverage == musicMatrix.getNumRows())
+                musicMatrix.lightOne(0, j, ceilingColor);
+        }
+        else if (j > musicMatrix.getNumCols() / 2)
+        {
+            musicMatrix.lightOneColumn(j, color, myData.channelData[(j - 2) / 2], false);
+            if (myData.channelData[(j - 2) / 2] == musicMatrix.getNumRows())
+                musicMatrix.lightOne(0, j, ceilingColor);
+        }
+        else
+        {
+            musicMatrix.lightOneColumn(j, color, myData.channelData[j / 2], false);
+            if (myData.channelData[j / 2] == musicMatrix.getNumRows())
+                musicMatrix.lightOne(0, j, ceilingColor);
+        }
+    }
+
+    musicMatrix.show();
 }
