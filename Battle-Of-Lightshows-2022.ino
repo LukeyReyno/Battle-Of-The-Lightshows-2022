@@ -12,6 +12,8 @@ struct_message myData;
 const int MY_PACKET_VERSION = 2;    //only processes verion 2 packets
 const bool debug_flag = false;
 volatile boolean newData = false;
+int noDataConsec = 0;
+bool offline = false;
 
 // callback function that will be executed when data is received
 void OnDataRecv(const uint8_t* mac, const uint8_t *incomingData, int len)
@@ -55,6 +57,10 @@ void loop()
         newData = false;
         musicMatrix.turnOff();
 
+        // reset any offline stats
+        noDataConsec = 0;
+        offline = false;
+
         if (myData.packetVersion != MY_PACKET_VERSION) return;
         
         //process only the pattern numbers implemented.
@@ -95,6 +101,32 @@ void loop()
                 musicMatrix.lightOneRow(3, CRGB::AliceBlue);
                 break;
         }
+        musicMatrix.show();
+    }
+    else
+        noDataConsec++;
+
+    // assume offline after many empty data packets
+    if (noDataConsec > 1000 || offline)
+    {
+        noDataConsec = 0;
+        offline = true;
+
+        uint8_t sinBeat = beatsin8(10, 0, musicMatrix.getNumCols() - 1, 0, 0);
+        uint8_t sinBeat2 = beatsin8(15, 0, musicMatrix.getNumCols() - 1, 0, 85);
+        uint8_t sinBeat3 = beatsin8(5, 0, musicMatrix.getNumCols() - 1, 0, 170);
+
+        musicMatrix.lightOneColumn(sinBeat, CRGB::DarkBlue);
+        musicMatrix.lightOneColumn(sinBeat2, CRGB::Purple);
+        musicMatrix.lightOneColumn(sinBeat3, CRGB::Blue);
+
+        musicMatrix.fadeToBlack(5);
+
+        musicMatrix.displayChar(1, 1, 'T', CRGB::BurlyWood);
+        musicMatrix.displayChar(1, 5, 'E', CRGB::Yellow);
+        musicMatrix.displayChar(1, 9, 'X', CRGB::White);
+        musicMatrix.displayChar(1, 13, 'T', CRGB::Black);
+
         musicMatrix.show();
     }
 }
