@@ -8,7 +8,7 @@
 #define DEFAULT_COL_NUM 16
 #define DEFAULT_DATA_PIN 27
 #define DEFAULT_CHIPSET WS2812B
-#define DEFAULT_BRIGHTNESS 1
+#define DEFAULT_BRIGHTNESS 20
 #define DEFAULT_LED_TYPE GRB
 
 class LED_Matrix
@@ -31,6 +31,7 @@ class LED_Matrix
         void iterRows(CRGB::HTMLColorCode color);
         void lightOneColumn(int colIndex, CRGB::HTMLColorCode color, int numToFill = -1, bool down = true);
         void iterColumns(CRGB::HTMLColorCode color);
+        int ratioByMRows(int audioData);
         void fillGradientMatrix(CRGB::HTMLColorCode* colors, int size);
         void rainbow();
 

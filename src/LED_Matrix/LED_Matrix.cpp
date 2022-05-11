@@ -86,8 +86,6 @@ void LED_Matrix::lightOneColumn(int colIndex, CRGB::HTMLColorCode color, int num
 {
     if (numToFill == -1)
         numToFill = this->numRows;
-    else
-        numToFill++;
 
     for (int i = 0; i < numToFill; i++)
     {
@@ -104,6 +102,13 @@ void LED_Matrix::iterColumns(CRGB::HTMLColorCode color)
     }
 
     FastLED.show();
+}
+
+// returns number of rows to fill
+// audio Data is a percent
+int LED_Matrix::ratioByMRows(int audioData)
+{
+    return (audioData * this->numRows / 100) + 1;
 }
 
 void LED_Matrix::fillGradientMatrix(CRGB::HTMLColorCode* colors, int size)

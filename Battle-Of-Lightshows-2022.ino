@@ -3,8 +3,18 @@
 #include <FastLED.h>
 #include "Music_LED_Matrix_ESPNOW.h"
 
+// set up matrix
+LED_Matrix musicMatrix;
+
+// initialize data struct
+struct_message myData;
+
+const int MY_PACKET_VERSION = 2;    //only processes verion 2 packets
+const bool debug_flag = false;
+volatile boolean newData = false;
+
 // callback function that will be executed when data is received
-void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len)
+void OnDataRecv(const uint8_t* mac, const uint8_t *incomingData, int len)
 {
     memcpy(&myData, incomingData, sizeof(myData));
     newData = true;
@@ -20,7 +30,7 @@ void setup()
 
     //print the WiFi MAC address
     Serial.print(F("\r\n\nThis node's WiFi MAC Address is "));
-    Serial.print(WiFi.macAddress());
+    Serial.println(WiFi.macAddress());
 
     // Init ESP-NOW
     if (esp_now_init() != ESP_OK)
@@ -32,27 +42,33 @@ void setup()
     // Once ESPNow is successfully Init, we will register for recv CB to
     // get recv packer info
     esp_now_register_recv_cb(OnDataRecv);
+
+    musicMatrix.turnOff();
+    delay(500);
 }
 
 void loop()
 {
-    uint16_t potRead = analogRead(POT_PIN);
-
-    uint8_t brightness = map(potRead, 0, 4095, 0, 150);
-    musicMatrix.setBrightness(brightness);
-
     if (newData)
     {
         //clear flag
         newData = false;
+        musicMatrix.turnOff();
 
         if (myData.packetVersion != MY_PACKET_VERSION) return;
         
         //process only the pattern numbers implemented.
         //if a pattern is not implemented, turn the display off
         //this inludes pattern 0.
+
+        if (debug_flag)
+        {
+            Serial.print("Data Pattern: "); Serial.println(myData.pattern);
+        }
+
         switch (myData.pattern)
         {
+            // debug pattern
             case 0:
                 musicMatrix.turnOff();
                 Serial.print(F("packetVersion: "));    Serial.println(myData.packetVersion);
@@ -66,77 +82,12 @@ void loop()
 
             //RGB, No Peak Hold, Channel Select
             case 1:
-                synthesizer();
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-            case 7:
-                break;
-                
-            //RGB, No Peak Hold, Average
-            case 8:
+                //Bar_Visualizer(&musicMatrix, myData);
                 break;
 
-            //Blue, No Peak Hold, Channel Select
-            case 9:
-            case 10:
-            case 11:
-            case 12:
-            case 13:
-            case 14:
-            case 15:
-                break;
-                
-            //RGB, No Peak Hold, Average
-            case 16:
-                break;
-
-            //RGB, Peak Hold, Channel Select
-            case 17:
-            case 18:
-            case 19:
-            case 20:
-            case 21:
-            case 22:
-            case 23:
-                break;
-
-            //RGB, Peak Hold, Average
-            case 24:
-                break;
-
-            //Blue, Peak Hold, Channel Select
-            case 25:
-            case 26:
-            case 27:
-            case 28:
-            case 29:
-            case 30:
-            case 31:
-                break;
-
-            //Blue, Peak Hold, Average
-            case 32:
-                break;
-
-            //RGB, Peak Only, Channel Select
-            case 33:
-            case 34:
-            case 35:
-            case 36:
-            case 37:
-            case 38:
-            case 39:
-                break;
-
-            //RGB, Peak Only, Average
-            case 40:
-                break;
-
-            //Best in show
+            //Best in show (final submission)
             case 255:
+                Bar_Visualizer(&musicMatrix, myData);
                 break;
 
             default:
@@ -144,32 +95,6 @@ void loop()
                 musicMatrix.lightOneRow(3, CRGB::AliceBlue);
                 break;
         }
+        musicMatrix.show();
     }
-}
-
-void synthesizer(CRGB::HTMLColorCode color = CRGB::AliceBlue, CRGB::HTMLColorCode ceilingColor = CRGB::Red)
-{
-    for (int j = 0; j < musicMatrix.getNumCols(); j++)
-    {
-        if (j == musicMatrix.getNumCols() / 2 || j == (musicMatrix.getNumCols() / 2) + 1)
-        {
-            musicMatrix.lightOneColumn(j, CRGB::Green, myData.monoAverage, false);
-            if (myData.monoAverage == musicMatrix.getNumRows())
-                musicMatrix.lightOne(0, j, ceilingColor);
-        }
-        else if (j > musicMatrix.getNumCols() / 2)
-        {
-            musicMatrix.lightOneColumn(j, color, myData.channelData[(j - 2) / 2], false);
-            if (myData.channelData[(j - 2) / 2] == musicMatrix.getNumRows())
-                musicMatrix.lightOne(0, j, ceilingColor);
-        }
-        else
-        {
-            musicMatrix.lightOneColumn(j, color, myData.channelData[j / 2], false);
-            if (myData.channelData[j / 2] == musicMatrix.getNumRows())
-                musicMatrix.lightOne(0, j, ceilingColor);
-        }
-    }
-
-    musicMatrix.show();
 }
