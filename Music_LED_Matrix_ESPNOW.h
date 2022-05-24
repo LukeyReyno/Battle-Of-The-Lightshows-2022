@@ -17,9 +17,15 @@ typedef struct struct_message
 void Bar_Visualizer(
     LED_Matrix* musicMatrix,
     struct_message data,
-    CRGB::HTMLColorCode color = CRGB::AliceBlue,
-    CRGB::HTMLColorCode ceilingColor = CRGB::Red
+    CRGB color = CRGB::AliceBlue,
+    CRGB ceilingColor = CRGB::Red
 );
 
+void Bar_Visualizer_blue_wave(
+    LED_Matrix* musicMatrix,
+    struct_message data,
+    CRGB color,
+    CRGB ceilingColor
+);
 
-
+void floating_dots(LED_Matrix* musicMatrix, CRGB dotColor);

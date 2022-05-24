@@ -111,13 +111,6 @@ void LED_Matrix::iterColumns(CRGB color)
     FastLED.show();
 }
 
-// returns number of rows to fill
-// audio Data is a percent
-int LED_Matrix::ratioByMRows(int audioData)
-{
-    return (audioData * this->numRows / 100) + 1;
-}
-
 // display 3 x 5 character at (col, row)
 // all points are relative to top-left
 void LED_Matrix::displayChar(int row, int col, char c, CRGB color)

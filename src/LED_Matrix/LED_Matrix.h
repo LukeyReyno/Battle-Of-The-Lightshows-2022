@@ -32,7 +32,6 @@ class LED_Matrix
         void iterRows(CRGB color);
         void lightOneColumn(int colIndex, CRGB color, int numToFill = -1, bool down = true);
         void iterColumns(CRGB color);
-        int ratioByMRows(int audioData);
         void displayChar(int row, int col, char c, CRGB color);
         void fillGradientMatrix(CRGB* colors, int size);
         void rainbow();

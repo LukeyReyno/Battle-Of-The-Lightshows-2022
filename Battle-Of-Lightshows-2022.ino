@@ -2,6 +2,9 @@
 #include <WiFi.h>
 #include <FastLED.h>
 #include "Music_LED_Matrix_ESPNOW.h"
+#include "LED_Matrix_Patterns.h"
+
+const bool ONLINE = false;
 
 // set up matrix
 LED_Matrix musicMatrix;
@@ -12,8 +15,6 @@ struct_message myData;
 const int MY_PACKET_VERSION = 2;    //only processes verion 2 packets
 const bool debug_flag = false;
 volatile boolean newData = false;
-int noDataConsec = 0;
-bool offline = false;
 
 // callback function that will be executed when data is received
 void OnDataRecv(const uint8_t* mac, const uint8_t *incomingData, int len)
@@ -46,20 +47,22 @@ void setup()
     esp_now_register_recv_cb(OnDataRecv);
 
     musicMatrix.turnOff();
+    musicMatrix.setBrightness(270);
     delay(500);
 }
 
 void loop()
 {
-    if (newData)
+    if (!ONLINE)
+    {
+        dots_dynamic_background(&musicMatrix);
+        floating_dots(&musicMatrix, CRGB::Blue);
+    }
+    else if (newData)
     {
         //clear flag
         newData = false;
-        musicMatrix.turnOff();
-
-        // reset any offline stats
-        noDataConsec = 0;
-        offline = false;
+        //musicMatrix.turnOff();
 
         if (myData.packetVersion != MY_PACKET_VERSION) return;
         
@@ -88,45 +91,22 @@ void loop()
 
             //RGB, No Peak Hold, Channel Select
             case 1:
-                //Bar_Visualizer(&musicMatrix, myData);
+                Bar_Visualizer(&musicMatrix, myData);
+                break;
+
+            case 253:
+                Bar_Visualizer_blue_wave(&musicMatrix, myData, CRGB::Salmon, CRGB::Red);
                 break;
 
             //Best in show (final submission)
             case 255:
-                Bar_Visualizer(&musicMatrix, myData);
+                Bar_Visualizer_blue_wave(&musicMatrix, myData, CRGB::AliceBlue, CRGB::Red);
                 break;
 
             default:
-                //musicMatrix.turnOff();
-                musicMatrix.lightOneRow(3, CRGB::AliceBlue);
+                musicMatrix.turnOff();
                 break;
         }
-        musicMatrix.show();
-    }
-    else
-        noDataConsec++;
-
-    // assume offline after many empty data packets
-    if (noDataConsec > 1000 || offline)
-    {
-        noDataConsec = 0;
-        offline = true;
-
-        uint8_t sinBeat = beatsin8(10, 0, musicMatrix.getNumCols() - 1, 0, 0);
-        uint8_t sinBeat2 = beatsin8(15, 0, musicMatrix.getNumCols() - 1, 0, 85);
-        uint8_t sinBeat3 = beatsin8(5, 0, musicMatrix.getNumCols() - 1, 0, 170);
-
-        musicMatrix.lightOneColumn(sinBeat, CRGB::DarkBlue);
-        musicMatrix.lightOneColumn(sinBeat2, CRGB::Purple);
-        musicMatrix.lightOneColumn(sinBeat3, CRGB::Blue);
-
-        musicMatrix.fadeToBlack(5);
-
-        musicMatrix.displayChar(1, 1, 'T', CRGB::BurlyWood);
-        musicMatrix.displayChar(1, 5, 'E', CRGB::Yellow);
-        musicMatrix.displayChar(1, 9, 'X', CRGB::White);
-        musicMatrix.displayChar(1, 13, 'T', CRGB::Black);
-
         musicMatrix.show();
     }
 }
